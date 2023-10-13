@@ -32,13 +32,13 @@ func GetTags(c *gin.Context) { //似乎没有检查state
 	})
 }
 
-//	@Summary	新增文章标签
-//	@Produce	json
-//	@Param		name		query		string	true	"Name"
-//	@Param		state		query		int		false	"State"
-//	@Param		created_by	query		int		false	"CreatedBy"
-//	@Success	200			{string}	json	"{"code":200,"data":{},"msg":"ok"}"
-//	@Router		/api/v1/tags [post]
+// @Summary	新增文章标签
+// @Produce	json
+// @Param		name		query		string	true	"Name"
+// @Param		state		query		int		false	"State"
+// @Param		created_by	query		string	false	"CreatedBy"
+// @Success	200			{string}	json	"{"code":200,"data":{},"msg":"ok"}"
+// @Router		/api/v1/tags [post]
 func AddTag(c *gin.Context) {
 	name := c.Query("name")
 	state := com.StrTo(c.DefaultQuery("state", "0")).MustInt()
@@ -68,6 +68,15 @@ func AddTag(c *gin.Context) {
 		"data": make(map[string]string),
 	})
 }
+
+// @Summary	修改文章标签
+// @Produce	json
+// @Param		id			path		int		true	"TagId"
+// @Param		state		query		int		false	"State"
+// @Param		modified_by	query		string	true	"ModifiedBy"
+// @Success	200			{string}	json	"{"code":200,"data":{},"msg":"ok"}"
+// @Failure	400			{string}	json	"{"code":400,"data":{},"msg":"参数错误"}"
+// @Router		/api/v1/tags/{id} [put]
 func EditTag(c *gin.Context) {
 	id := com.StrTo(c.Param("id")).MustInt()
 	name := c.Query("name")

@@ -1,0 +1,77 @@
+info:
+  contact: {}
+paths:
+  /api/v1/articles/{id}:
+    put:
+      parameters:
+      - description: 文章ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: tag_ID
+        in: body
+        name: tag_id
+        schema:
+          type: integer
+      - description: 简述
+        in: body
+        name: desc
+        schema:
+          type: string
+      - description: 文章内容
+        in: body
+        name: content
+        schema:
+          type: string
+      - description: 调整人
+        in: body
+        name: modified_by
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            type: string
+        "400":
+          description: 参数错误
+          schema:
+            type: string
+        "10002":
+          description: tag不存在
+          schema:
+            type: string
+        "10003":
+          description: 文章不存在
+          schema:
+            type: string
+      summary: 编辑文章内容
+  /api/v1/tags:
+    post:
+      parameters:
+      - description: Name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: State
+        in: query
+        name: state
+        type: integer
+      - description: CreatedBy
+        in: query
+        name: created_by
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"code":200,"data":{},"msg":"ok"}'
+          schema:
+            type: string
+      summary: 新增文章标签
+swagger: "2.0"

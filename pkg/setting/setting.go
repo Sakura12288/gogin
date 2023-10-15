@@ -1,6 +1,7 @@
 package setting
 
 import (
+	"fmt"
 	"github.com/go-ini/ini"
 	"log"
 	"time"
@@ -8,67 +9,64 @@ import (
 
 //用来读取参数信息
 
-var (
-	Conf    *ini.File
-	RunMode string
+type App struct {
+	PageSize        int
+	JwtSecret       string
+	RuntimeRootPath string
 
-	PageSize  int
-	JwtSecret string
+	ImagePrefixUrl string
+	ImageSavePath  string
+	ImageMaxsize   int
+	ImageAllowExts []string
 
-	HttpPort     int
+	LogSavePath string
+	LogSaveName string
+	LogFileExt  string
+	TimeFormat  string
+}
+
+var AppSetting = &App{}
+
+type Server struct {
+	RunMode      string
+	HttPPort     int
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+}
 
+var ServerSetting = &Server{}
+
+type Database struct {
 	Type        string
 	User        string
 	Password    string
 	Host        string
-	Database    string
+	Name        string
 	TablePrefix string
-)
-
-func init() {
-	var err error
-	Conf, err = ini.Load("conf/conf.ini")
-	if err != nil {
-		log.Fatal("配置信息读取失败", err)
-	}
-	LoadBase()
-	LoadApp()
-	LoadServer()
-	LoadDatabase()
-}
-func LoadBase() {
-	RunMode = Conf.Section("").Key("RUNMODE").MustString("debug")
 }
 
-func LoadServer() {
-	sec, err := Conf.GetSection("server")
-	if err != nil {
-		log.Fatalf("Parse Server err : %s", err.Error())
-	}
-	PageSize = sec.Key("PAGE_SIZE").MustInt(10)
-	JwtSecret = sec.Key("JWTSECRET").MustString("sibensb")
-}
-func LoadApp() {
-	sec, err := Conf.GetSection("app")
-	if err != nil {
-		log.Fatalf("Parse app err : %s", err.Error())
-	}
-	HttpPort = sec.Key("HTTP_PORT").MustInt(9090)
-	ReadTimeout = time.Duration(sec.Key("READ_TIMEOUT").MustInt(60)) * time.Second
-	WriteTimeout = time.Duration(sec.Key("WRITE_TIMEOUT").MustInt(60)) * time.Second
-}
+var MysqlDatabaseSetting = &Database{}
 
-func LoadDatabase() {
-	sec, err := Conf.GetSection("database")
+func Setup() {
+	cfg, err := ini.Load("conf/app.ini")
 	if err != nil {
-		log.Fatalf("Parse database err : %s", err.Error())
+		log.Fatalf("读取配置信息出错 %v", err)
 	}
-	Type = sec.Key("TYPE").MustString("mysql")
-	User = sec.Key("USER").MustString("root")
-	Password = sec.Key("PASSWORD").MustString("123456")
-	Host = sec.Key("HOST").MustString("localhost:9090")
-	Database = sec.Key("NAME").MustString("blog")
-	TablePrefix = sec.Key("TABLE_PREFIX").MustString("blog_")
+	err = cfg.Section("app").MapTo(AppSetting)
+	if err != nil {
+		log.Fatalf("读取app配置信息出错 %v", err)
+	}
+	AppSetting.ImageMaxsize = AppSetting.ImageMaxsize * 1024 * 1024
+	err = cfg.Section("server").MapTo(ServerSetting)
+	if err != nil {
+		log.Fatalf("读取server配置信息出错 %v", err)
+	}
+	fmt.Println(ServerSetting)
+	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
+	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
+	err = cfg.Section("database").MapTo(MysqlDatabaseSetting)
+	if err != nil {
+		log.Fatalf("读取database配置信息出错 %v", err)
+	}
+	fmt.Println(MysqlDatabaseSetting)
 }

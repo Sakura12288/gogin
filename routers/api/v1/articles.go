@@ -12,18 +12,18 @@ import (
 	"net/http"
 )
 
-//	@Summary	编辑文章内容
-//	@Produce	json
-//	@Param		id			path		int		true	"文章ID"
-//	@Param		tag_id		body		int		false	"tag_ID"
-//	@Param		desc		body		string	false	"简述"
-//	@Param		content		body		string	false	"文章内容"
-//	@Param		modified_by	body		string	true	"调整人"
-//	@Success	200			{object}	string	"成功"
-//	@Failure	400			{object}	string	"参数错误"
-//	@Failure	10002		{object}	string	"tag不存在"
-//	@Failure	10003		{object}	string	"文章不存在"
-//	@Router		/api/v1/articles/{id} [put]
+// @Summary	编辑文章内容
+// @Produce	json
+// @Param		id			path		int		true	"文章ID"
+// @Param		tag_id		body		int		false	"tag_ID"
+// @Param		desc		body		string	false	"简述"
+// @Param		content		body		string	false	"文章内容"
+// @Param		modified_by	body		string	true	"调整人"
+// @Success	200			{object}	string	"成功"
+// @Failure	400			{object}	string	"参数错误"
+// @Failure	10002		{object}	string	"tag不存在"
+// @Failure	10003		{object}	string	"文章不存在"
+// @Router		/api/v1/articles/{id} [put]
 func EditArticles(c *gin.Context) { //注意修改可以为部分修改，故部分内容可以为空
 	valid := validation.Validation{}
 	id := com.StrTo(c.Param("id")).MustInt()
@@ -32,6 +32,7 @@ func EditArticles(c *gin.Context) { //注意修改可以为部分修改，故部
 	desc := c.Query("desc")
 	content := c.Query("content")
 	modifiedBy := c.Query("modified_by")
+	coverImageUrl := c.Query("cover_image_url")
 	var state int = -1
 	data := make(map[string]interface{})
 	if arg := c.Query("state"); arg != "" {
@@ -49,7 +50,7 @@ func EditArticles(c *gin.Context) { //注意修改可以为部分修改，故部
 	//valid.Required(desc, "desc").Message("desc不能为空")
 	//valid.Required(content, "title").Message("content不能为空")
 	valid.MaxSize(content, 65535, "content").Message("内容最长为65535字节")
-
+	valid.MaxSize(coverImageUrl, 255, "content").Message("照片最大为5MB")
 	code := mistakeMsg.INVALID_PARAMS
 	if !valid.HasErrors() {
 		if models.ExistByIdAt(id) {
@@ -66,6 +67,9 @@ func EditArticles(c *gin.Context) { //注意修改可以为部分修改，故部
 					data["desc"] = desc
 				}
 				data["modified_by"] = modifiedBy
+				if coverImageUrl != "" {
+					data["cover_image_url"] = coverImageUrl
+				}
 				models.EditArticles(id, data)
 				code = mistakeMsg.SUCCESS
 			} else {
@@ -91,6 +95,7 @@ func AddArticles(c *gin.Context) { //感觉是不是可以把valid加在字段�
 	desc := c.Query("desc")
 	content := c.Query("content")
 	createdBy := c.Query("created_by")
+	coverImageUrl := c.Query("cover_image_url")
 	state := com.StrTo(c.DefaultQuery("state", "0")).MustInt()
 
 	valid := validation.Validation{}
@@ -104,6 +109,8 @@ func AddArticles(c *gin.Context) { //感觉是不是可以把valid加在字段�
 	valid.Required(desc, "desc").Message("desc不能为空")
 	valid.Required(content, "title").Message("content不能为空")
 	valid.MaxSize(content, 65535, "content").Message("内容最长为65535字节")
+	valid.Required(coverImageUrl, "cover_image_url").Message("cover_image_url不能为空")
+	valid.MaxSize(coverImageUrl, 255, "content").Message("照片最大为5MB")
 
 	code := mistakeMsg.INVALID_PARAMS
 	if !valid.HasErrors() {
@@ -115,6 +122,7 @@ func AddArticles(c *gin.Context) { //感觉是不是可以把valid加在字段�
 			data["desc"] = desc
 			data["created_by"] = createdBy
 			data["state"] = state
+			data["cover_image_url"] = coverImageUrl
 			models.AddArticle(data)
 			code = mistakeMsg.SUCCESS
 		} else {
@@ -150,7 +158,7 @@ func GetArticles(c *gin.Context) { //通过标签id获取大量文章
 	code := mistakeMsg.INVALID_PARAMS
 	if !valid.HasErrors() {
 		code = mistakeMsg.SUCCESS
-		data["lists"] = models.GetArticles(util.GetPage(c), setting.PageSize, maps)
+		data["lists"] = models.GetArticles(util.GetPage(c), setting.AppSetting.PageSize, maps)
 		data["total"] = models.GetArticleTotal(maps)
 	} else {
 		for _, err := range valid.Errors {

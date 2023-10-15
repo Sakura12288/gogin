@@ -2,19 +2,55 @@ package main
 
 import (
 	"fmt"
+	"github.com/fvbock/endless"
+	"github.com/gin-gonic/gin"
+	"gogin/models"
+	"gogin/pkg/logging"
 	"gogin/pkg/setting"
+	"gogin/pkg/util"
 	"gogin/routers"
-	"net/http"
+	"log"
+	"syscall"
 )
 
+func init() {
+	setting.Setup()
+	models.Setup()
+	logging.Setup()
+	util.Setup()
+}
 func main() {
-	router := routers.InitRouter()
-	s := &http.Server{
-		Addr:           fmt.Sprintf(":%d", setting.HttpPort),
-		ReadTimeout:    setting.ReadTimeout,
-		WriteTimeout:   setting.WriteTimeout,
-		Handler:        router,
-		MaxHeaderBytes: 1 << 20,
+	gin.SetMode(setting.ServerSetting.RunMode)
+
+	//routersInit := routers.InitRouter()
+	//readTimeout := setting.ServerSetting.ReadTimeout
+	//writeTimeout := setting.ServerSetting.WriteTimeout
+	//endPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttPPort)
+	//maxHeaderBytes := 1 << 20
+	//
+	//server := &http.Server{
+	//	Addr:           endPoint,
+	//	Handler:        routersInit,
+	//	ReadTimeout:    readTimeout,
+	//	WriteTimeout:   writeTimeout,
+	//	MaxHeaderBytes: maxHeaderBytes,
+	//}
+	//
+	//log.Printf("[info] start http server listening %s", endPoint)
+	//
+	//server.ListenAndServe()
+	endless.DefaultReadTimeOut = setting.ServerSetting.ReadTimeout
+	endless.DefaultWriteTimeOut = setting.ServerSetting.WriteTimeout
+	endless.DefaultMaxHeaderBytes = 1 << 20
+
+	endpoint := fmt.Sprintf(":%d", setting.ServerSetting.HttPPort)
+
+	server := endless.NewServer(endpoint, routers.InitRouter())
+	server.BeforeBegin = func(add string) {
+		log.Printf("Actual pid is %d", syscall.Getpid())
 	}
-	s.ListenAndServe()
+	err := server.ListenAndServe()
+	if err != nil {
+		log.Fatalf("Server err : %v", err)
+	}
 }

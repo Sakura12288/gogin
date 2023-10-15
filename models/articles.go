@@ -75,3 +75,10 @@ func (article *Article) BeforeCreate(scope *gorm.Scope) error {
 func (article *Article) BeforeUpdate(scope *gorm.Scope) error {
 	return scope.SetColumn("ModifiedOn", time.Now().Unix())
 }
+
+//硬删除
+
+func CleanAllArticles() bool {
+	db.Unscoped().Where("deleted_on != ?", 0).Delete(&Article{})
+	return true
+}

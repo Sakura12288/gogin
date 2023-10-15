@@ -2,43 +2,45 @@ package logging
 
 import (
 	"fmt"
-	"log"
+	"gogin/pkg/file"
+	"gogin/pkg/setting"
 	"os"
 	"time"
 )
 
-var (
-	LogSavePath = "runtime/logs/"
-	LogSaveName = "log"
-	LogFileExt  = "log"
-	TimeFormat  = "20060102"
-)
-
-func getLodFilePath() string {
-	return fmt.Sprintf("%s", LogSavePath)
+func getLogFilePath() string {
+	return fmt.Sprintf("%s", setting.AppSetting.LogSavePath)
 }
-func getFullLogFilePath() string {
-	prefixPath := getLodFilePath()
-	suffixPath := fmt.Sprintf("%s%s.%s", LogSaveName, time.Now().Format(TimeFormat), LogFileExt)
-	return fmt.Sprintf("%s%s", prefixPath, suffixPath)
+func getLogFileName() string {
+	return fmt.Sprintf("%s%s.%s",
+		setting.AppSetting.LogSaveName,
+		time.Now().Format(setting.AppSetting.TimeFormat),
+		setting.AppSetting.LogFileExt)
 }
-func openLogfile(filepath string) *os.File {
-	_, err := os.Stat(filepath)
-	switch {
-	case os.IsNotExist(err):
-		mkdir()
-	case os.IsPermission(err):
-		log.Fatalf("权限不允许 : %v", err)
-	}
-	handle, err := os.OpenFile(filepath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func openLogfile(fileName, filepath string) (*os.File, error) {
+	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Fail to OpenFile : %v", err)
+		return nil, fmt.Errorf("os.Getwd err: %v", err)
 	}
-	return handle
+	src := dir + "/" + filepath
+	perm := file.CheckPermission(src)
+	if perm {
+		return nil, fmt.Errorf("file.CheckPermission Permission denied src: %s", src)
+	}
+	err = file.IsNotExistMkDir(src)
+	if err != nil {
+		return nil, fmt.Errorf("file.IsNotExistMkDir src: %s, err : %v", src, err)
+	}
+	f, err := file.Open(src+fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("Fail to OpenFile: %v", err)
+	}
+	return f, nil
+
 }
 func mkdir() {
 	dir, _ := os.Getwd()
-	err := os.MkdirAll(dir+"/"+getLodFilePath(), os.ModePerm)
+	err := os.MkdirAll(dir+"/"+getLogFilePath(), os.ModePerm)
 	if err != nil {
 		panic(err)
 	}

@@ -29,9 +29,14 @@ var (
 	levelFlags = []string{"DEBUG", "INFO", "WARN", "FATAL"}
 )
 
-func init() {
-	filePath := getFullLogFilePath()
-	F = openLogfile(filePath)
+func Setup() {
+	var err error
+	filePath := getLogFilePath()
+	fileName := getLogFileName()
+	F, err = openLogfile(fileName, filePath)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	logger = log.New(F, logPrefix, log.LstdFlags)
 }
 

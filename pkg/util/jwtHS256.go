@@ -3,11 +3,10 @@ package util
 import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"gogin/pkg/setting"
 	"time"
 )
 
-var jwtSecret = []byte(setting.JwtSecret)
+var jwtSecret []byte
 
 type HSClaims struct {
 	Username string `json:"username"`

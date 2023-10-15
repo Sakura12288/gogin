@@ -23,7 +23,7 @@ func GetTags(c *gin.Context) { //似乎没有检查state
 		t.State = state
 	}
 	code := mistakeMsg.SUCCESS
-	data["list"] = models.GetTags(util.GetPage(c), setting.PageSize, t)
+	data["list"] = models.GetTags(util.GetPage(c), setting.AppSetting.PageSize, t)
 	data["total"] = models.GetTagTotal(t)
 	c.JSON(code, gin.H{
 		"code": code,

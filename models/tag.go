@@ -62,3 +62,10 @@ func (tag *Tag) BeforeCreate(scope *gorm.Scope) error {
 func (tag *Tag) BeforeUpdate(scope *gorm.Scope) error {
 	return scope.SetColumn("ModifiedOn", time.Now().Unix())
 }
+
+//硬删除
+
+func CleanAllTag() bool {
+	db.Unscoped().Where("deleted_on != ? ", 0).Delete(&Tag{})
+	return true
+}

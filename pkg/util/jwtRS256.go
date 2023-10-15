@@ -73,14 +73,11 @@ func GenerateTokenUsingRS256(username string) (string, error) {
 			Issuer:    "TL",
 		},
 	}
-	fmt.Println("nihao")
 	rsa_pri_key, err := parsePriKeyBytes([]byte(pri_key))
-	fmt.Println("nihao1")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claim).SignedString(rsa_pri_key)
-	fmt.Println("nihao2")
 	return token, err
 }
 func ParseTokenUsingRS256(token string) (*RSClaim, error) {

@@ -8,12 +8,12 @@ ENV GOPROXY=https://goproxy.cn
 
 WORKDIR /gogin
 COPY go.mod .
-COPY go.sum .
+COPY go.sum .clear
 RUN go mod download
 
 COPY . .
 
-RUN go build -o test .
+RUN go build -o test ./main.go
 
 
 FROM scratch
@@ -23,4 +23,3 @@ COPY ./docs /docs
 COPY --from=builder /gogin/test /
 
 EXPOSE 9090
-CMD ["/test","conf/conf.ini"]

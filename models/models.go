@@ -18,28 +18,18 @@ type Model struct {
 	DeletedOn  int `json:"deleted_on"`
 }
 
-func init() {
-	var (
-		err                                                 error
-		dbType, user, password, host, database, tableprefix string
-	)
-	sec, err := setting.Conf.GetSection("database")
-	if err != nil {
-		log.Fatalf("参数载入错误 %s", err.Error())
-	}
-	dbType = sec.Key("TYPE").MustString("mysql")
-	user = sec.Key("USER").MustString("root")
-	password = sec.Key("PASSWORD").MustString("123456")
-	host = sec.Key("HOST").MustString("localhost:9090")
-	database = sec.Key("NAME").MustString("blog")
-	tableprefix = sec.Key("TABLE_PREFIX").MustString("blog_")
-	db, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		user, password, host, database))
-	if err != nil {
+func Setup() {
+	var err error //注意重新声明的问题啊！！！！！！！！！！！！！！！
+	db, err = gorm.Open(setting.MysqlDatabaseSetting.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		setting.MysqlDatabaseSetting.User,
+		setting.MysqlDatabaseSetting.Password,
+		setting.MysqlDatabaseSetting.Host,
+		setting.MysqlDatabaseSetting.Name))
+	if err != nil || db == nil {
 		log.Fatalf("数据库载入失败 %s", err.Error())
 	}
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
-		return tableprefix + defaultTableName
+		return setting.MysqlDatabaseSetting.TablePrefix + defaultTableName
 	}
 	db.SingularTable(true)
 	db.LogMode(true)

@@ -1,0 +1,25 @@
+version: '3'
+services:
+  mysql_t:
+    image: mysql
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./conf/my.cnf:/etc/my.cnf
+      - ./conf/:/docker-entrypoint-initdb.d/
+    environment:
+      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_DATABASE: 'blog'
+      TZ: Asia/Shanghai
+    command: --default-authentication-plugin=mysql_native_password
+  app:
+    image: test:6
+    ports:
+      - "9090:9090"
+    depends_on:
+      - mysql_t
+    restart: always        #防止mysql未初始化而导致链接失败
+    command:
+      - /test
+      - /conf/conf.ini

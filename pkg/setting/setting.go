@@ -1,7 +1,6 @@
 package setting
 
 import (
-	"fmt"
 	"github.com/go-ini/ini"
 	"log"
 	"time"
@@ -14,15 +13,21 @@ type App struct {
 	JwtSecret       string
 	RuntimeRootPath string
 
-	ImagePrefixUrl string
+	PrefixUrl      string
 	ImageSavePath  string
 	ImageMaxsize   int
 	ImageAllowExts []string
+
+	ExportExcelSavePath string
 
 	LogSavePath string
 	LogSaveName string
 	LogFileExt  string
 	TimeFormat  string
+
+	QrCodeSavePath string
+	PosterSavePath string
+	FontSavePath   string
 }
 
 var AppSetting = &App{}
@@ -47,6 +52,16 @@ type Database struct {
 
 var MysqlDatabaseSetting = &Database{}
 
+type Redis struct {
+	Host        string
+	Password    string
+	MaxIdle     int
+	MaxActive   int
+	IdleTimeout time.Duration
+}
+
+var RedisSetting = &Redis{}
+
 func Setup() {
 	cfg, err := ini.Load("conf/app.ini")
 	if err != nil {
@@ -61,12 +76,15 @@ func Setup() {
 	if err != nil {
 		log.Fatalf("读取server配置信息出错 %v", err)
 	}
-	fmt.Println(ServerSetting)
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
 	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
 	err = cfg.Section("database").MapTo(MysqlDatabaseSetting)
 	if err != nil {
 		log.Fatalf("读取database配置信息出错 %v", err)
 	}
-	fmt.Println(MysqlDatabaseSetting)
+	err = cfg.Section("redis").MapTo(RedisSetting)
+	if err != nil {
+		log.Fatalf("读取Redis配置出错 %v", err)
+	}
+	RedisSetting.IdleTimeout = RedisSetting.IdleTimeout * time.Second
 }

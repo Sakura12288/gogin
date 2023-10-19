@@ -5,6 +5,7 @@ import (
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"gogin/models"
+	"gogin/pkg/gredis"
 	"gogin/pkg/logging"
 	"gogin/pkg/setting"
 	"gogin/pkg/util"
@@ -18,6 +19,7 @@ func init() {
 	models.Setup()
 	logging.Setup()
 	util.Setup()
+	gredis.Setup()
 }
 func main() {
 	gin.SetMode(setting.ServerSetting.RunMode)

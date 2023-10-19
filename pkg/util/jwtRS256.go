@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"gogin/pkg/logging"
 	"math/rand"
@@ -74,9 +73,6 @@ func GenerateTokenUsingRS256(username string) (string, error) {
 		},
 	}
 	rsa_pri_key, err := parsePriKeyBytes([]byte(pri_key))
-	if err != nil {
-		fmt.Println(err.Error())
-	}
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claim).SignedString(rsa_pri_key)
 	return token, err
 }

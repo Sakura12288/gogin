@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
@@ -49,4 +50,25 @@ func Open(name string, flag int, perm os.FileMode) (*os.File, error) {
 		return nil, err
 	}
 	return f, err
+}
+
+func MustOpen(filename, filePath string) (*os.File, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	src := dir + "/" + filePath
+	perm := CheckPermission(src)
+	if perm {
+		return nil, fmt.Errorf("file.CheckPermission err :%v", err)
+	}
+	err = IsNotExistMkDir(src)
+	if err != nil {
+		return nil, fmt.Errorf("IsNotExistMkDir err :%v", err)
+	}
+	f, err := Open(src+filename, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("Open err :%v", err)
+	}
+	return f, nil
 }

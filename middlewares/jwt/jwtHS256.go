@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"github.com/gin-gonic/gin"
+	"gogin/pkg/app"
 	"gogin/pkg/logging"
 	"gogin/pkg/mistakeMsg"
 	"gogin/pkg/util"
@@ -25,11 +26,8 @@ func JwtHS256() gin.HandlerFunc {
 			}
 		}
 		if code != mistakeMsg.SUCCESS {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code": code,
-				"msg":  mistakeMsg.GetMsgFlags(code),
-				"data": make(map[string]string),
-			})
+			appG := app.Response{c}
+			appG.ResponseJson(http.StatusUnauthorized, code, nil)
 			c.Abort()
 			return
 		}

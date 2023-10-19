@@ -1,0 +1,8 @@
+[INFO][errors.go:10]2023/10/19 10:00:17 [Username.Required. Username Can not be empty]
+[INFO][errors.go:10]2023/10/19 10:00:31 [Username.Required. Username Can not be empty]
+[INFO][errors.go:10]2023/10/19 10:01:33 [Username.Required. Username Can not be empty]
+[INFO][errors.go:10]2023/10/19 10:05:12 [Username.Required. Username Can not be empty]
+[INFO][errors.go:10]2023/10/19 10:06:09 [Username.Required. Username Can not be empty]
+[INFO][errors.go:10]2023/10/19 10:06:27 [Username.Required. Username Can not be empty]
+[INFO][errors.go:10]2023/10/19 10:07:23 [Username.Required. Username Can not be empty]
+[INFO][articles.go:267]2023/10/19 10:15:21 [open runtime/font/msyhbd.ttc: The system cannot find the path specified.]

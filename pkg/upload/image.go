@@ -20,7 +20,7 @@ func GetImagePath() string {
 }
 
 func GetImageFullUrl(name string) string {
-	return setting.AppSetting.ImagePrefixUrl + "/" + GetImagePath() + name
+	return setting.AppSetting.PrefixUrl + "/" + GetImagePath() + name
 }
 
 func GetImageName(name string) string {

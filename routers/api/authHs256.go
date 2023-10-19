@@ -3,48 +3,56 @@ package api
 import (
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
-	"gogin/models"
-	"gogin/pkg/logging"
+	"gogin/pkg/app"
 	"gogin/pkg/mistakeMsg"
-	"gogin/pkg/util"
+	"gogin/service/auth_service"
 	"net/http"
 )
 
 //生成HS256token
 
-type auth struct {
+type Auth struct {
 	Username string `valid:"Required; MaxSize(50)"`
 	Password string `valid:"Required; MaxSize(50)"`
 }
 
 func GetAuthUsingHS256(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
-	a := auth{Username: username, Password: password}
+	var (
+		appG = app.Response{C: c}
+	)
+	username := c.PostForm("username")
+	password := c.PostForm("password")
 	valid := validation.Validation{}
-	ok, _ := valid.Valid(&a)
-	code := mistakeMsg.INVALID_PARAMS
-	data := make(map[string]interface{})
-	if ok {
-		code = mistakeMsg.SUCCESS
-		if models.CheckAuth(username, password) {
-			token, err := util.GenerateTokenUsingHs256(username, password)
-			if err != nil {
-				code = mistakeMsg.ERROR_AUTH_TOKEN
-			} else {
-				data["token"] = token
-			}
-		} else {
-			code = mistakeMsg.ERROR_AUTH
-		}
-	} else {
-		for _, err := range valid.Errors {
-			logging.Info(err.Key, err.Message)
-		}
+	a := Auth{
+		Username: username,
+		Password: password,
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  mistakeMsg.GetMsgFlags(code),
-		"data": data,
+	ok, _ := valid.Valid(&a)
+	if !ok {
+		app.MakeErrors(valid.Errors)
+		appG.ResponseJson(http.StatusBadRequest, mistakeMsg.INVALID_PARAMS, nil)
+		return
+	}
+	auth := auth_service.Auth{
+		Username: a.Username,
+		Password: a.Password,
+	}
+	exists, err := auth.Exist()
+	if err != nil {
+		appG.ResponseJson(http.StatusInternalServerError, mistakeMsg.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
+		return
+	}
+	if !exists {
+		appG.ResponseJson(http.StatusOK, mistakeMsg.ERROR_AUTH, nil)
+		return
+	}
+	token, err := auth.GenerateHS256Token()
+	if err != nil {
+		appG.ResponseJson(http.StatusInternalServerError, mistakeMsg.ERROR_AUTH_TOKEN, nil)
+		return
+	}
+
+	appG.ResponseJson(http.StatusOK, mistakeMsg.SUCCESS, map[string]interface{}{
+		"token": token,
 	})
 }

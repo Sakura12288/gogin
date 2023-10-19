@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
 )
@@ -28,7 +27,6 @@ func GenerateTokenUsingHs256(username, password string) (string, error) {
 		},
 	}
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	fmt.Println(tokenClaims)
 	token, err := tokenClaims.SignedString(jwtSecret)
 	return token, err
 }
